@@ -1,0 +1,776 @@
+/* Custom CSS for a professional, branded dashboard layout */
+
+/* Root Variables for Consistency (Default: Light Mode) */
+:root {
+    /* SSA Logo Colors */
+    --ssa-logo-blue: #003366;
+    --ssa-logo-green: #339933;
+    --ssa-logo-white: #ffffff;
+
+    /* --- UPGRADED THEME COLORS (From original CSS) --- */
+    --ssa-primary-bg: var(--ssa-logo-blue);
+    --ssa-secondary-accent: #007bff; /* Brighter blue */
+    --ssa-active-color: #28a745; /* Brighter green */
+    --ssa-sidebar-bg: #222; /* Darker sidebar for contrast */
+    --ssa-sidebar-link-color: #e0e0e0;
+    --ssa-active-border: #ffc107;
+
+    /* General Theme Colors (LIGHT MODE) */
+    --ssa-text-color: #343a40;
+    --ssa-body-bg: #f8f9fa; /* Lighter body bg */
+    --ssa-card-bg: var(--ssa-logo-white);
+    --ssa-card-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    --ssa-border-color: #dee2e6;
+    
+    /* 🚨 Inline Style Variables Moved Here */
+    --body-bg: #f4f6f9;
+    --card-bg: var(--ssa-logo-white);
+    --text-color: #212529;
+    --border-color: rgba(0,0,0,0.1);
+    --header-bg: #0c1e35; /* Fixed Navy for Header */
+    --sidebar-bg-inline: #212529; /* Fixed Dark for Sidebar (Used by #sidebarMenu below) */
+}
+
+/* Dark Mode Overrides */
+[data-bs-theme="dark"] {
+    --ssa-text-color: #f8f9fa;
+    --ssa-body-bg: #121212;
+    --ssa-card-bg: #1e1e1e;
+    --ssa-card-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    --ssa-border-color: #333;
+    --ssa-primary-bg: #004a99;
+    --ssa-secondary-accent: #007bff;
+    --ssa-active-color: #28a745;
+    --ssa-sidebar-bg: #181818;
+    --ssa-sidebar-link-color: #c0c0e0;
+    
+    /* 🚨 Inline Style Variables Moved Here */
+    --body-bg: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #ffffff;
+    --border-color: rgba(255,255,255,0.1);
+    --header-bg: #004a99;
+    --sidebar-bg-inline: #181818;
+}
+
+/* General Body and Font Settings */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--ssa-body-bg);
+    color: var(--ssa-text-color);
+    transition: all 0.3s ease-in-out;
+    padding-top: 70px;
+    
+    /* Apply base theme colors */
+    background-color: var(--body-bg); 
+    color: var(--text-color);
+}
+
+/* Utility to hide views */
+.hidden {
+    display: none !important;
+}
+
+/* --- PRELOADER STYLES (NEW) --- */
+#globalLoader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--ssa-body-bg);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease-out;
+}
+
+.loader-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    color: var(--ssa-secondary-accent);
+}
+
+/* --- NEW: LOGIN PAGE STYLES (omitted for brevity) --- */
+#loginView {
+    background-color: var(--ssa-primary-bg);
+    min-height: 100vh;
+    padding-top: 0;
+}
+.login-card {
+    background-color: var(--ssa-card-bg);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+.login-logo {
+    max-height: 80px;
+    background-color: var(--ssa-logo-white);
+    padding: 10px;
+    border-radius: 15px;
+}
+.login-tabs .nav-link {
+    color: var(--ssa-text-color);
+    font-weight: 600;
+}
+.login-tabs .nav-link.active {
+    background-color: var(--ssa-primary-bg) !important;
+    color: var(--ssa-logo-white) !important;
+    border-color: var(--ssa-primary-bg);
+}
+[data-bs-theme="dark"] .login-tabs .nav-link {
+     color: var(--ssa-sidebar-link-color);
+}
+[data-bs-theme="dark"] .login-card {
+     background-color: var(--ssa-card-bg);
+}
+
+
+/* --- REVERTED HEADINGS --- */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--ssa-text-color);
+    text-shadow: none;
+    color: var(--text-color); 
+}
+
+[data-bs-theme="dark"] h1, [data-bs-theme="dark"] h2, [data-bs-theme="dark"] h3,
+[data-bs-theme="dark"] h4, [data-bs-theme="dark"] h5, [data-bs-theme="dark"] h6 {
+    color: var(--ssa-text-color);
+    text-shadow: none;
+    color: var(--text-color); 
+}
+
+
+/* Fixed Top Navbar */
+.navbar {
+    z-index: 1030;
+    height: 70px;
+    background-color: var(--ssa-primary-bg) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-logo-final {
+    height: 55px;
+    width: auto;
+    margin-right: 10px;
+    max-width: 250px;
+    background-color: var(--ssa-logo-white);
+    padding: 5px 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+}
+
+#liveClock {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* ----------------------------------------------------------- */
+/* 🚨 FIX AREA: SIDEBAR BASE (Desktop default is open) */
+/* ----------------------------------------------------------- */
+
+/* Desktop Base (Default Open State) */
+.sidebar {
+    position: fixed;
+    top: 70px;
+    bottom: 0;
+    /* 🚨 Desktop default: Sidebar is fully visible at left: 0 */
+    left: 0; 
+    z-index: 1050; 
+    padding: 0;
+    background-color: var(--ssa-sidebar-bg) !important;
+    
+    /* Desktop uses margin-left for horizontal movement, mobile uses left */
+    transition: margin-left 0.3s ease-in-out, left 0.3s ease; 
+    width: 250px;
+    padding-top: 15px !important;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* #sidebarMenu Specific Styles (Using strong specificity for fixed elements) */
+#sidebarMenu {
+    top: 70px;
+    height: calc(100vh - 70px);
+    background-color: var(--sidebar-bg-inline) !important;
+    padding-top: 20px;
+    width: 250px; 
+    z-index: 1050;
+    left: 0;
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: var(--ssa-sidebar-link-color);
+    padding: 12px 20px;
+    margin-top: 2px;
+    border-left: 5px solid transparent;
+    transition: all 0.2s ease;
+    font-size: 1.05rem;
+    touch-action: manipulation;
+}
+
+.sidebar .nav-link.active {
+    color: var(--ssa-logo-white) !important;
+    background-color: var(--ssa-active-color) !important; 
+    border-left: 5px solid var(--ssa-active-border);
+    box-shadow: none;
+    text-shadow: none;
+    margin: 2px 0;
+    width: 100%;
+    border-radius: 0;
+}
+
+.sidebar .sub-nav {
+    padding-left: 35px;
+    font-size: 0.95em;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+/* Main Content Area - Desktop Default */
+main {
+    padding-top: 20px !important;
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+    padding-bottom: 30px !important;
+    
+    /* 🚨 CRITICAL FIX: ENFORCES MARGIN TO PREVENT OVERLAP */
+    margin-left: 250px !important; 
+    
+    /* Ensures main content uses the remaining width on desktop */
+    width: calc(100% - 250px) !important; 
+
+    transition: margin-left 0.3s ease-in-out;
+    background-color: var(--body-bg);
+    min-height: calc(100vh - 70px);
+}
+
+/* ----------------------------------------------------------- */
+/* 🚨 FIX 1: DESKTOP HIDE (Confines margin-left to desktop ONLY) */
+/* ----------------------------------------------------------- */
+
+@media (min-width: 768px) {
+    body.sidebar-hidden .sidebar {
+        /* Hides the sidebar using margin-left on desktop */
+        margin-left: -250px !important; 
+        /* Ensures left: 0 is maintained so margin-left is the only moving property */
+        left: 0 !important; 
+    }
+    body.sidebar-hidden main {
+        margin-left: 0 !important;
+        width: 100% !important; /* Full width when sidebar is hidden */
+    }
+}
+
+
+/* ----------------------------------------------------------- */
+/* 🚨 FIX 2: MOBILE HIDE/SHOW (Confines left to mobile ONLY) */
+/* ----------------------------------------------------------- */
+@media (max-width: 767.98px) {
+
+    body {
+        overflow-x: hidden;
+    }
+
+    /* 🚨 Mobile Default State (Hidden) */
+    .sidebar {
+        position: fixed; 
+        top: 70px;
+        
+        /* CRITICAL HIDE: Moves the sidebar using 'left' */
+        left: -250px !important; 
+        
+        /* CRITICAL FIX: Overrides desktop margin-left */
+        margin-left: 0 !important; 
+        
+        width: 250px;
+        height: calc(100vh - 70px);
+        z-index: 1050; 
+        transition: left 0.3s ease;
+    }
+
+    /* 🚨 Mobile Show State (Toggled by body.sidebar-open) */
+    body.sidebar-open .sidebar {
+        left: 0 !important; /* Forces the sidebar into view */
+    }
+
+    /* Main content full width */
+    main {
+        margin-left: 0 !important;
+        padding: 15px !important;
+        width: 100% !important;
+    }
+
+    /* Overlay */
+    body.sidebar-open::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1040;
+    }
+
+    /* Mobile specific size/display fixes */
+    .navbar-logo-final {
+        height: 42px;
+        max-width: 160px;
+    }
+        
+    .navbar-brand {
+         margin-left: 0;
+         margin-right: 10px;
+    }
+
+    #sidebarToggle,
+    #themeToggle,
+    .dropdown > a {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        margin: 0 5px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Profile button does not need border if it uses an icon */
+    .dropdown > a {
+         border: none !important;
+    }
+
+    #sidebarToggle i,
+    #themeToggle i,
+    .dropdown > a i {
+        font-size: 1.1rem !important;
+    }
+        
+    #liveClock {
+        display: none !important;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+/* ========= END MOBILE SIDEBAR FIX (FINAL & CORRECTED) ========= */
+
+
+/* ----------------------------------------------------------- */
+/* 🚨 FIX 3: PROFILE ICON SIZE CONSISTENCY */
+/* ----------------------------------------------------------- */
+.dropdown a .bi-person-circle {
+    /* Ensures the icon size is consistently large, overriding any mobile bleeding rules */
+    font-size: 1.8rem !important; 
+}
+
+
+/* ------------------------------------------------------------------- */
+/* *** CARD & BUTTON STYLES (MOVED FROM INLINE) *** */
+/* ------------------------------------------------------------------- */
+
+
+/* This is the default style for plain white cards (like the chart and top 4) */
+.card {
+    border: none;
+    border-radius: 15px;
+    background-color: var(--ssa-card-bg);
+    color: var(--ssa-text-color);
+    height: 100%;
+    transition: all 0.3s ease-in-out;
+    box-shadow: var(--ssa-card-shadow);
+    /* 🚨 Re-apply card-bg/text-color from inline style if theme vars were different */
+    background-color: var(--card-bg); 
+    color: var(--text-color);
+}
+
+/* *** HOVER EFFECT FOR TOP 4 CARDS *** */
+.card.clickable-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer;
+}
+
+/* ================================================================
+NEW: HIGHLIGHTS FOR TOP 4 CARDS
+================================================================
+*/
+
+/* 1. This adds the colored left border highlight */
+.card-border-warning { border-left: 5px solid #ffc107; }
+.card-border-primary { border-left: 5px solid #007bff; }
+.card-border-info { border-left: 5px solid #17a2b8; }
+.card-border-danger { border-left: 5px solid #dc3545; }
+
+/* 2. This styles the new icon circle highlight */
+.card-icon-highlight {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+.card-icon-highlight i {
+    font-size: 1.6rem;
+}
+
+/* We just style the icons/text inside the default .card */
+.card-body .text-warning { color: #ffc107 !important; }
+.card-body .text-warning-emphasis { color: #B8860B !important; }
+.card-body .text-primary { color: #007bff !important; }
+.card-body .text-primary-emphasis { color: #0056b3 !important; }
+.card-body .text-info { color: #17a2b8 !important; }
+.card-body .text-info-emphasis { color: #0f6674 !important; }
+.card-body .text-danger { color: #dc3545 !important; }
+.card-body .text-danger-emphasis { color: #a71d2a !important; }
+.card-body .text-success { color: #28a745 !important; }
+
+
+/* ================================================================
+UPDATED 3D GRADIENT STYLES (FINAL FIX)
+================================================================
+*/
+
+/* Base Card for consistent styling */
+.vend-new-gradient-1,
+.vend-new-gradient-2,
+.vend-new-gradient-3 {
+    padding: 20px;
+    border: none;
+    border-radius: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover effect for a subtle lift */
+.vend-new-gradient-1:hover,
+.vend-new-gradient-2:hover,
+.vend-new-gradient-3:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+/* Card 1 (Top): Brighter Purple/Blue */
+.vend-new-gradient-1 {
+    background: linear-gradient(135deg, #8e44ad 0%, #3498db 100%);
+}
+
+/* Card 2 (Bottom-Left): DARK GREEN/LIGHT GREEN GRADIENT */
+.vend-new-gradient-2 {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+/* Card 3 (Bottom-Right): Brighter Blue/Green */
+.vend-new-gradient-3 {
+    background: linear-gradient(135deg, #5DADE2 0%, #58D68D 100%);
+}
+
+/* Icon Styling inside gradient cards */
+.vend-icon-circle-new {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+.vend-icon-circle-new i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+/* Text color fix for gradient cards */
+.vend-new-gradient-1, .vend-new-gradient-1 h1, .vend-new-gradient-1 h3, .vend-new-gradient-1 h5, .vend-new-gradient-1 small,
+.vend-new-gradient-2, .vend-new-gradient-2 h3, .vend-new-gradient-2 h5,
+.vend-new-gradient-3, .vend-new-gradient-3 h3, .vend-new-gradient-3 h5 {
+    /* Set default to white for readability on gradients, unless overridden by Dark Mode logic below */
+    color: white !important; 
+    font-weight: 700;
+}
+
+/* Force white text in Dark Mode */
+[data-bs-theme="dark"] .vend-new-gradient-1, [data-bs-theme="dark"] .vend-new-gradient-1 h1, [data-bs-theme="dark"] .vend-new-gradient-1 h3, [data-bs-theme="dark"] .vend-new-gradient-1 h5, [data-bs-theme="dark"] .vend-new-gradient-1 small,
+[data-bs-theme="dark"] .vend-new-gradient-2, [data-bs-theme="dark"] .vend-new-gradient-2 h3, [data-bs-theme="dark"] .vend-new-gradient-2 h5,
+[data-bs-theme="dark"] .vend-new-gradient-3, [data-bs-theme="dark"] .vend-new-gradient-3 h3, [data-bs-theme="dark"] .vend-new-gradient-3 h5 {
+    color: white !important;
+}
+
+
+/* Text sizes */
+.vend-new-gradient-1 h1, .vend-new-gradient-1 h3, .vend-new-gradient-2 h3, .vend-new-gradient-3 h3 {
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+/* This is the text you wanted "little big" */
+.vend-new-gradient-1 h1 {
+    font-size: 2.5rem !important;
+}
+
+/* This is the text for the bottom two cards */
+.vend-new-gradient-2 h3, .vend-new-gradient-3 h3, .vend-new-gradient-1 h3 {
+    font-size: 1.75rem !important;
+}
+
+.vend-new-gradient-1 small, .vend-new-gradient-2 h5, .vend-new-gradient-3 h5, .vend-new-gradient-1 h5 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+
+/* Chart and Table Fixes */
+#chart-container {
+    height: 400px;
+    width: 100%;
+    border-radius: 10px;
+}
+
+/* --- REVERTED FORM STYLES (Simple) --- */
+.form-control, .form-select {
+    background-color: var(--ssa-card-bg);
+    color: var(--ssa-text-color);
+    border-color: var(--ssa-border-color);
+    /* 🚨 Re-apply card-bg/text-color from inline style if theme vars were different */
+    background-color: var(--card-bg); 
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--ssa-secondary-accent);
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+
+/* --- REVERTED TABLE HEADER (Simple) --- */
+.table-dark th {
+    background-color: var(--ssa-primary-bg) !important;
+    color: var(--ssa-logo-white);
+    vertical-align: middle;
+}
+
+/* --- NEW STYLES FOR STATION DETAIL PAGE --- */
+.station-info-header {
+    background-color: var(--ssa-card-bg);
+    border: 1px solid var(--ssa-border-color);
+    font-size: 0.95rem;
+    /* 🚨 Re-apply card-bg/border-color from inline style if theme vars were different */
+    background-color: var(--card-bg); 
+    border-color: var(--border-color);
+}
+[data-bs-theme="dark"] .station-info-header {
+    background-color: var(--ssa-card-bg);
+    /* 🚨 Re-apply card-bg from inline style if theme vars were different */
+    background-color: var(--card-bg); 
+}
+/* Style for the 'Create Bowser' form */
+.bg-light {
+    background-color: var(--ssa-body-bg) !important;
+    /* 🚨 Re-apply body-bg from inline style if theme vars were different */
+    background-color: var(--body-bg) !important;
+}
+[data-bs-theme="dark"] .bg-light {
+    background-color: var(--ssa-card-bg) !important;
+    /* 🚨 Re-apply card-bg from inline style if theme vars were different */
+    background-color: var(--card-bg) !important;
+}
+
+.table-light {
+    --bs-table-bg: var(--ssa-body-bg);
+    /* 🚨 Re-apply body-bg from inline style if theme vars were different */
+    --bs-table-bg: var(--body-bg);
+}
+[data-bs-theme="dark"] .table-light {
+    --bs-table-bg: var(--ssa-body-bg);
+    --bs-table-color: var(--ssa-text-color);
+    /* 🚨 Re-apply body-bg/text-color from inline style if theme vars were different */
+    --bs-table-bg: var(--body-bg);
+    --bs-table-color: var(--text-color);
+}
+
+/* *** NEW: Super compact tables for a denser view *** */
+.table-sm td, .table-sm th {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+
+/* === [NEW] CODE FOR COLUMN HIDING === */
+
+/* Stop dropdown from closing when clicking a checkbox */
+#columnToggleMenu {
+    min-width: 250px;
+}
+#columnToggleMenu .dropdown-item {
+    cursor: pointer;
+}
+
+/* --- Column Hiding Logic --- */
+.table.hide-col-device-type .col-device-type,
+.table.hide-col-pump-id .col-pump-id,
+.table.hide-col-asset-id .col-asset-id,
+.table.hide-col-datetime .col-datetime,
+.table.hide-col-volume .col-volume,
+.table.hide-col-amount .col-amount,
+.table.hide-col-total-volume .col-total-volume,
+.table.hide-col-total-amount .col-total-amount {
+    display: none;
+}
+/* Unified Gradient Card Styling */
+.vend-card {
+    padding: 20px;
+    border-radius: 15px;
+    background: var(--gradient-bg, linear-gradient(135deg, #8e44ad 0%, #3498db 100%));
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    color: white !important;
+}
+
+/* ICON + TITLE HEADER */
+.vend-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.25);
+}
+
+.vend-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.vend-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.vend-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* INDIVIDUAL ROWS - DITTO ALIGNMENT FIX */
+.vend-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.vend-row:last-child {
+    border-bottom: none;
+}
+
+.vend-label {
+    min-width: 150px; /* Enforce consistent width for alignment */
+    margin-right: 20px; /* Space between label and value */
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.vend-value {
+    flex-grow: 1; /* Allows value to take remaining space */
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+/* Mobile View Adjustments for ditto alignment (adjust label width on smaller screens) */
+@media (max-width: 767.98px) {
+    .vend-label {
+        min-width: 100px; 
+        margin-right: 10px;
+    }
+}
+/* =========================================
+   DARK MODE OVERRIDES (Fixes "Not Supported" Pages)
+   ========================================= */
+
+/* 1. Force hardcoded 'bg-light' to turn Dark Grey in Dark Mode */
+[data-bs-theme="dark"] .bg-light {
+    background-color: #2b3035 !important; 
+    color: #e9ecef !important;
+}
+
+/* 2. Force hardcoded 'bg-white' to turn Darker Grey */
+[data-bs-theme="dark"] .bg-white {
+    background-color: #212529 !important;
+    color: #e9ecef !important;
+}
+
+/* 3. Force hardcoded 'text-dark' to turn White */
+[data-bs-theme="dark"] .text-dark {
+    color: #f8f9fa !important;
+}
+
+/* 4. Fix Input Fields & Select Dropdowns */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: #212529;
+    border-color: #495057;
+    color: #fff;
+}
+[data-bs-theme="dark"] .form-control::placeholder {
+    color: #adb5bd;
+}
+/* Fix disabled inputs to be readable */
+[data-bs-theme="dark"] .form-control:disabled, 
+[data-bs-theme="dark"] .form-select:disabled {
+    background-color: #343a40;
+    color: #ced4da;
+    opacity: 1;
+}
+
+/* 5. Fix Modals */
+[data-bs-theme="dark"] .modal-content {
+    background-color: #212529;
+    border: 1px solid #495057;
+    color: #fff;
+}
+[data-bs-theme="dark"] .modal-header,
+[data-bs-theme="dark"] .modal-footer {
+    border-color: #495057;
+}
+[data-bs-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* 6. Fix Dropdown Menus */
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: #343a40;
+    border-color: #495057;
+}
+[data-bs-theme="dark"] .dropdown-item {
+    color: #dee2e6;
+}
+[data-bs-theme="dark"] .dropdown-item:hover {
+    background-color: #495057;
+    color: #fff;
+}
+.swal2-container {
+    z-index: 999999 !important;
+}

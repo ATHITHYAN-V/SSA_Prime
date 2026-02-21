@@ -1,0 +1,233 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}SSA Automation - Asset Management{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --body-bg: #f4f6f9;
+        --card-bg: #ffffff;
+        --text-color: #212529;
+        --header-bg: #0c1e35;
+        --sidebar-bg: #24272c;
+    }
+    [data-bs-theme="dark"] {
+        --body-bg: #121212;
+        --card-bg: #1e1e1e;
+        --text-color: #ffffff;
+    }
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: var(--body-bg);
+        color: var(--text-color);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    #sidebarMenu {
+        position: fixed; left: 0; width: 250px; z-index: 1050; top: 70px;
+        height: calc(100vh - 70px); background-color: var(--sidebar-bg) !important;
+        padding-top: 20px;
+    }
+    main { margin-top: 70px; min-height: calc(100vh - 70px); }
+    .card-theme {
+        background-color: var(--card-bg); color: var(--text-color);
+        border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .nav-link.active { background-color: #28a745 !important; color: white !important; }
+    .hidden { display: none !important; }
+</style>
+
+<div id="appView">
+    <header class="navbar navbar-expand-lg fixed-top" id="mainHeader">
+        <div class="container-fluid">
+            <a class="navbar-brand me-2" href="/dashboard/">
+                <div class="logo-box">
+                    <img src="{% static 'images/ssa_logo.png' %}" alt="SSA Automation Logo" class="navbar-logo-final" onerror="this.src='https://placehold.co/200x60/ffffff/003366?text=SSA+Logo';"> 
+                </div>
+            </a>
+            <button class="btn btn-outline-light me-auto" id="sidebarToggle" type="button"><i class="bi bi-list fs-4"></i></button>
+            <div class="d-flex align-items-center">
+                <span id="liveClock" class="d-flex align-items-center text-white me-4 small">
+                    <i class="bi bi-cloud-sun me-1"></i> 26 °C &nbsp;|&nbsp; <span id="currentTime">--:--:--</span>
+                </span>
+                <button class="btn btn-outline-light me-3" id="themeToggle" type="button"><i class="bi bi-moon-fill" id="themeIcon"></i></button>
+                <div class="dropdown">
+                    <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-circle text-white fs-4"></i></a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><h6 class="dropdown-header" id="currentUser">User: Guest</h6></li>
+                        <li><p class="dropdown-item-text mb-0 small" id="currentUserRole"></p></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" id="logoutBtn" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="bg-dark sidebar"> 
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item" data-role="Super Admin Admin User">
+                            <a class="nav-link" href="/dashboard/"><i class="bi bi-house-door-fill me-2"></i>Dashboard</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin">
+                            <a class="nav-link" href="/admins/"><i class="bi bi-person-lines-fill me-2"></i>Manage Admins</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin Admin">
+                            <a class="nav-link" href="/users/"><i class="bi bi-people-fill me-2"></i>Manage Users</a>
+                        </li>
+                        <li class="nav-item" data-role-user-only="Asset">
+                            <a class="nav-link active" href="/asset/"><i class="bi bi-box-seam-fill me-2"></i>Assets</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin Admin User">
+                            <a class="nav-link" href="/stations/"><i class="bi bi-fuel-pump-fill me-2"></i>Stations</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin Admin User">
+                            <a class="nav-link" href="/transactions/"><i class="bi bi-currency-dollar me-2"></i>Transaction</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin Admin User">
+                            <a class="nav-link" href="/reports/"><i class="bi bi-bar-chart-fill me-2"></i>Reports</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2 fw-bold">Stationary Asset Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <input type="text" id="assetSearchInput" class="form-control form-control-sm me-2" placeholder="Search Asset ID..." style="width: 250px;">
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12 col-md-4">
+                        <div class="card card-theme p-3 border-start border-info border-5">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted fw-bold mb-1 text-uppercase small">Total Assets</h6>
+                                    <h3 class="fw-bold mb-0" id="totalAssetCount">0</h3>
+                                </div>
+                                <div class="fs-2 text-info opacity-50"><i class="bi bi-box-seam"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-theme shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 text-center" style="color: var(--text-color);">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Model</th>
+                                        <th>Volume</th>
+                                        <th>Description</th>
+                                        <th>Validity</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assetListTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="spinner-border text-primary" role="status"></div>
+                                            <p class="mt-2 text-muted">Syncing data...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editDeviceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-theme border-0 shadow">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title" id="editDeviceModalLabel">Edit Asset</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editDeviceForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ID</label>
+                        <input type="text" id="editDeviceIdField" class="form-control bg-light" readonly disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Model</label>
+                        <input type="text" id="editDeviceName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea id="editDeviceDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (typeof fetchAndDisplayStations === 'function') {
+            await fetchAndDisplayStations();
+        }
+
+        const populateAssetPage = () => {
+            const tableBody = document.getElementById('assetListTableBody');
+            if (!tableBody) return;
+            
+            const data = allStationaryData || []; 
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No assets found.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            data.forEach((item) => {
+                const row = `
+                    <tr>
+                        <td class="fw-bold text-primary">${item.stationary_id || item.id}</td>
+                        <td>${item.model || 'Standard'}</td>
+                        <td>${item.volume || '0.00'} L</td>
+                        <td>${item.stationary_description || '-'}</td>
+                        <td><span class="badge bg-success">Valid</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info text-white" onclick="window.openEditDeviceModal('${item.id}', 'stationary')">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+            document.getElementById('totalAssetCount').textContent = data.length;
+        };
+
+        setTimeout(populateAssetPage, 1000);
+
+        document.getElementById('assetSearchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allStationaryData.filter(a => 
+                (a.stationary_id || '').toLowerCase().includes(term)
+            );
+            const tableBody = document.getElementById('assetListTableBody');
+            tableBody.innerHTML = filtered.length ? '' : '<tr><td colspan="6">No match found</td></tr>';
+        });
+    });
+</script>
+{% endblock %}

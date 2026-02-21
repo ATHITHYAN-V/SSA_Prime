@@ -1,0 +1,32 @@
+--- Debugging for Admin: tester ---
+Admin Found: ID=30, Email=tester@gmail.com
+Latest Token Role: admin
+
+--- Simulating 'admin' role logic ---
+Assigned Station IDs (via UserAssignment): ['STSSA00005', 'STSSA00005', 'STSSA00006', 'STSSA00006', 'STSSA00013', 'STSSA00013', 'STSSA00011', 'STSSA00011', 'STSSA00012', 'STSSA00012', 'STSSA00003', 'STSSA00004', 'STSSA00004', 'STSSA00001', 'STSSA00001', 'STSSA00014']
+UserAssignments Check: Found 16 entries.
+ - ID: 360, Station: STSSA00005, User: tester1@gmail.com
+ - ID: 361, Station: STSSA00005, User: tester1@gmail.com
+ - ID: 362, Station: STSSA00006, User: tester1@gmail.com
+ - ID: 363, Station: STSSA00006, User: tester1@gmail.com
+ - ID: 368, Station: STSSA00013, User: tester1@gmail.com
+ - ID: 369, Station: STSSA00013, User: tester1@gmail.com
+ - ID: 380, Station: STSSA00011, User: tester1@gmail.com
+ - ID: 381, Station: STSSA00011, User: tester1@gmail.com
+ - ID: 382, Station: STSSA00012, User: tester1@gmail.com
+ - ID: 383, Station: STSSA00012, User: tester1@gmail.com
+ - ID: 393, Station: STSSA00003, User: tester2@gmail.com
+ - ID: 394, Station: STSSA00004, User: tester2@gmail.com
+ - ID: 395, Station: STSSA00004, User: tester2@gmail.com
+ - ID: 396, Station: STSSA00001, User: tester2@gmail.com
+ - ID: 397, Station: STSSA00001, User: tester2@gmail.com
+ - ID: 398, Station: STSSA00014, User: tester1@gmail.com
+Bowser IDs: ['BU001', 'BU002', 'BU003', 'BU004', 'BU005', 'BU006', 'BU007', 'BU008', 'BU009', 'BU010', 'BU001']
+Stationary IDs: ['ST001', 'ST002', 'ST003', 'ST004', 'ST005', 'ST006', 'ST007', 'ST008', 'ST009', 'ST010']
+Tank IDs: ['TA001', 'TA002', 'TA003', 'TA004', 'TA005', 'TA006', 'TA007', 'TA008', 'TA009', 'TA010']
+Total Transactions Found (filtered by assignment): 712
+Total Transactions in DB: 722
+Admin sees a SUBSET of transactions.
+
+--- Access Check ---
+Is email in SuperAdmin table? False

@@ -1,0 +1,311 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}SSA Automation - Transactions{% endblock %}
+
+{% block content %}
+<style>
+    /* --- UNIFIED THEME VARIABLES --- */
+    :root {
+        --body-bg: #f4f6f9;
+        --card-bg: #ffffff;
+        --text-color: #212529;
+        --border-color: rgba(0,0,0,0.1);
+        --header-bg: #0c1e35; 
+        --sidebar-bg: #24272c; 
+    }
+
+    [data-bs-theme="dark"] {
+        --body-bg: #121212;
+        --card-bg: #1e1e1e;
+        --text-color: #ffffff;
+        --border-color: rgba(255,255,255,0.1);
+        --header-bg: #004a99;
+    }
+
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: var(--body-bg);
+        color: var(--text-color);
+        padding-top: 70px; /* Standardized with Dashboard */
+        transition: background-color 0.3s ease;
+    }
+
+    /* --- HEADER & SIDEBAR FIXED LAYOUT --- */
+    #mainHeader {
+        z-index: 1060 !important; 
+        background-color: var(--header-bg) !important;
+    }
+
+    #sidebarMenu {
+        position: fixed;
+        left: 0;
+        top: 70px;
+        width: 250px;
+        height: calc(100vh - 70px);
+        background-color: var(--sidebar-bg) !important;
+        z-index: 1040; 
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        padding-top: 20px;
+    }
+
+    /* --- RESPONSIVE ALIGNMENT FIX --- */
+    main {
+        min-height: calc(100vh - 70px);
+        margin-left: 250px; /* ✅ FIX: Pushes content to the right of the sidebar */
+        padding: 20px;
+        transition: margin-left 0.3s ease;
+    }
+
+    @media (max-width: 991.98px) {
+        #sidebarMenu { transform: translateX(-100%); }
+        body.sidebar-open #sidebarMenu { transform: translateX(0); }
+        main { margin-left: 0 !important; }
+    }
+
+    /* --- UI ELEMENTS --- */
+    .nav-link { 
+        color: rgba(255,255,255,0.75); padding: 12px 20px; font-weight: 500;
+        display: flex; align-items: center;
+    }
+    .nav-link i { font-size: 1.1rem; margin-right: 12px; }
+    .nav-link:hover { color: white; background: rgba(255,255,255,0.05); }
+    .nav-link.active { background-color: #28a745 !important; color: white !important; }
+    .sub-nav { padding-left: 50px !important; font-size: 0.85rem; }
+    
+    .card { 
+        background-color: var(--card-bg); 
+        border: none; 
+        border-radius: 10px; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+        color: var(--text-color); 
+    }
+    .hidden { display: none !important; }
+</style>
+
+<div id="appView">
+    <header class="navbar navbar-expand-lg fixed-top shadow-sm" id="mainHeader">
+        <div class="container-fluid">
+            <a class="navbar-brand me-2" href="/dashboard/">
+                <div class="logo-box">
+                    <img src="{% static 'images/ssa_logo.png' %}" alt="SSA Logo" class="navbar-logo-final" height="40" onerror="this.src='https://placehold.co/200x60/ffffff/003366?text=SSA+Logo';"> 
+                </div>
+            </a>
+
+            <button class="btn btn-outline-light me-auto" id="sidebarToggle" type="button">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            
+            <div class="d-flex align-items-center">
+                <span id="liveClock" class="d-flex align-items-center text-white me-4 small">
+                    <i class="bi bi-cloud-sun me-1"></i> <span id="weatherTemp">26 °C</span> &nbsp;|&nbsp; <span id="currentTime">--:--:--</span>
+                </span>
+                <button class="btn btn-outline-light me-3" id="themeToggle" type="button" title="Toggle Mode">
+                    <i class="bi bi-moon-fill" id="themeIcon"></i>
+                </button>
+                <div class="dropdown">
+                    <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle text-white fs-4"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><h6 class="dropdown-header" id="currentUser">User: Guest</h6></li>
+                        <li><p class="dropdown-item-text mb-0 small" id="currentUserRole"></p></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="window.openProfileModal(); return false;"><i class="bi bi-person-gear me-2"></i>Edit Profile</a></li>
+                        <li><a class="dropdown-item" id="logoutBtn" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="bg-dark sidebar">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item" data-role="Super Admin Admin User">
+                            <a class="nav-link" id="showDashboard" href="/dashboard/"><i class="bi bi-house-door-fill me-2"></i>Dashboard</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin">
+                            <a class="nav-link" id="showManageAdmins" href="/admins/"><i class="bi bi-person-lines-fill me-2"></i>Manage Admins</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin Admin">
+                            <a class="nav-link" id="navManageUsers" href="/users/"><i class="bi bi-people-fill me-2"></i>Manage Users</a>
+                        </li>
+                        <li class="nav-item" data-role-user-only="Asset">
+                            <a class="nav-link" id="showAssets" href="/asset/"><i class="bi bi-box-seam-fill me-2"></i>Assets</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin Admin User">
+                            <a class="nav-link collapsed" data-bs-toggle="collapse" href="#stationMenu" role="button" aria-expanded="false">
+                                <i class="bi bi-fuel-pump-fill me-2"></i> Station
+                            </a>
+                            <div class="collapse" id="stationMenu">
+                                <ul class="nav flex-column ps-3">
+                                    <li class="nav-item" data-role="Super Admin Admin">
+                                        <a class="nav-link sub-nav" href="/stations-create/"><i class="bi bi-plus-circle me-2"></i> Create Station</a>
+                                    </li>
+                                    <li class="nav-item" data-role="Super Admin Admin User">
+                                        <a class="nav-link sub-nav" href="/stations/"><i class="bi bi-card-list me-2"></i> All Stations</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin Admin User">
+                            <a class="nav-link active" id="showTransactions" href="/transactions/"><i class="bi bi-currency-dollar me-2"></i> Transaction</a>
+                        </li>
+                        <li class="nav-item" data-role="Super Admin Admin User">
+                            <a class="nav-link" id="showReports" href="/reports/"><i class="bi bi-bar-chart-fill me-2"></i> Reports</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main> 
+                <section id="transactionView">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h1 class="h2 mb-0 fw-bold">Transaction Details</h1>
+                    </div>
+
+                    <div class="card p-3 mb-4 shadow-sm">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="selectMachine" class="form-label fw-bold small text-muted">STATION</label>
+                                <select id="selectMachine" class="form-select">
+                                    <option value="all-stations" selected>-- All Stations --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">DATE RANGE</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" id="fromDate">
+                                    <span class="input-group-text">to</span>
+                                    <input type="date" class="form-control" id="toDate">
+                                </div>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold small text-muted">TIME RANGE</label>
+                                <div class="input-group">
+                                    <input type="time" class="form-control" id="fromTime">
+                                    <span class="input-group-text">to</span>
+                                    <input type="time" class="form-control" id="toTime">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="filterDeviceType" class="form-label fw-bold small text-muted">DEVICE TYPE</label>
+                                <select id="filterDeviceType" class="form-select">
+                                    <option value="All Types" selected>All Types</option>
+                                    <option value="Bowser">Bowser</option>
+                                    <option value="Stationary">Stationary</option>
+                                    <option value="Tank">Tank</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label for="searchId" class="form-label fw-bold small text-muted">SEARCH ID</label>
+                                <input type="text" class="form-control" id="searchId" placeholder="Transaction ID...">
+                            </div>
+
+                            <div class="col-md-4 d-flex align-items-end gap-2">
+                                <button class="btn btn-outline-secondary flex-grow-1" onclick="window.clearTransactionFilters()">
+                                    <i class="bi bi-x-circle me-1"></i> Reset
+                                </button>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-layout-three-columns"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end p-2" id="columnToggleMenu">
+                                        <li><label class="dropdown-item d-flex justify-content-between">Type <input class="form-check-input column-toggle-item" type="checkbox" data-col="col-device-type" checked></label></li>
+                                        <li><label class="dropdown-item d-flex justify-content-between">Pump <input class="form-check-input column-toggle-item" type="checkbox" data-col="col-pump-id" checked></label></li>
+                                        <li><label class="dropdown-item d-flex justify-content-between">Date <input class="form-check-input column-toggle-item" type="checkbox" data-col="col-datetime" checked></label></li>
+                                        <li><label class="dropdown-item d-flex justify-content-between">Volume <input class="form-check-input column-toggle-item" type="checkbox" data-col="col-volume" checked></label></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm p-3 rounded-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2 small fw-bold text-muted">Show</span>
+                                <select id="rowsPerPage" class="form-select form-select-sm w-auto">
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                            <div class="small text-muted" id="tableInfo">Showing entries...</div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm text-center align-middle" id="transactionTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>S.No</th>
+                                        <th>Transaction ID</th>
+                                        <th>Device ID</th>
+                                        <th>Disp ID</th>
+                                        <th class="col-device-type">Type</th>
+                                        <th class="col-pump-id">Pump</th>
+                                        <th class="col-datetime">Date & Time</th>
+                                        <th class="col-volume">Volume (Ltr)</th>
+                                        <th>Amount (₹)</th>
+                                        <th class="col-total-volume text-muted">Total Vol</th>
+                                        <th class="col-total-amount text-muted">Total Amt</th>
+                                        <th>Attender</th>
+                                        <th>Vehicle</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionTableBody">
+                                    <tr><td colspan="15" class="p-5"><div class="spinner-border text-primary"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav class="mt-3"><ul class="pagination justify-content-center mb-0" id="paginationControls"></ul></nav>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="transactionDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content card-theme border-0 shadow">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold">Transaction Receipt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-dark">
+                <div class="text-center mb-3">
+                    <img src="{% static 'images/ssa_logo.png' %}" alt="Logo" style="width: 120px;">
+                    <h5 class="mt-2 fw-bold text-uppercase">SSA Automation Pvt Ltd</h5>
+                    <p class="small text-muted mb-0">ID: <span id="transactionDetailId" class="fw-bold"></span></p>
+                </div>
+                <hr>
+                <div class="row g-3">
+                    <div class="col-6"><strong>Device ID:</strong> <p id="detail-stationName" class="mb-0 text-muted small"></p></div>
+                    <div class="col-6"><strong>Type:</strong> <p id="detail-deviceType" class="mb-0 text-muted small"></p></div>
+                    <div class="col-6"><strong>Time:</strong> <p id="detail-timestamp" class="mb-0 text-muted small"></p></div>
+                    <div class="col-6"><strong>Status:</strong> <p class="mb-0"><span id="detail-status" class="badge"></span></p></div>
+                    <div class="col-12 text-center bg-light p-3 rounded border"><h3 class="mb-0 fw-bold" id="detail-volAmt"></h3></div>
+                    <div class="col-4 text-center border-end"><strong>Attender</strong><p id="detail-attender" class="small text-muted mb-0"></p></div>
+                    <div class="col-4 text-center border-end"><strong>Vehicle</strong><p id="detail-vehicle" class="small text-muted mb-0"></p></div>
+                    <div class="col-4 text-center"><strong>Temp</strong><p id="detail-sensor" class="small text-muted mb-0"></p></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary px-4" onclick="window.printTransactionReceipt()"><i class="bi bi-printer-fill me-2"></i>Print</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
