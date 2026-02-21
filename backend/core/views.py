@@ -2546,33 +2546,37 @@ def tank_detail(request, tank_id):
     request_body=openapi.Schema(type=openapi.TYPE_OBJECT)
 )
 @api_view(["POST"])
-@authentication_classes([TokenAuthentication])
 @permission_classes([AllowAny])
 @parser_classes([JSONParser])
 def update_service(request):
-
     data = request.data or {}
-
     try:
-        # -------------------------------
-        # Base Common Fields
-        # -------------------------------
+        dev_id = data.get("devID")
+ 
+        # 🔥 CHECK MQTT EXISTS
+        bowser = Bowser.objects.filter(mqtt_id=dev_id).first()
+        stationary = Stationary.objects.filter(mqtt_id=dev_id).first()
+        tank = Tank.objects.filter(mqtt_id=dev_id).first()
+ 
+        if not bowser and not stationary and not tank:
+            return resp(404, f"MQTT ID {dev_id} not registered")
+ 
+        # ✅ Get stnID from matched device's station
+        matched_device = bowser or stationary or tank
+        stn_id = matched_device.station.station_id
+ 
         base = {
-            "devID": data.get("devID"),
+            "devID": dev_id,
+            "stnID": stn_id,
             "todate": data.get("todate"),
             "totime": data.get("totime"),
             "tmprtr": data.get("tmprtr"),
             "hmidty": data.get("hmidty"),
         }
-
+ 
         tx = None
-
-        # -------------------------------
-        # Bowser Transaction
-        # -------------------------------
         if "bowser" in data:
             tx = data["bowser"]
-
             base.update({
                 "type": "bowser",
                 "bwsrid": tx.get("bwsrid"),
@@ -2580,38 +2584,23 @@ def update_service(request):
                 "vehnum": tx.get("vehnum"),
                 "mobnum": tx.get("mobnum"),
             })
-
-        # -------------------------------
-        # Stationary Transaction
-        # -------------------------------
         elif "stan" in data:
             tx = data["stan"]
-
             base.update({
                 "type": "stationary",
                 "stanid": tx.get("stanid"),
                 "pmpid": tx.get("pmpid"),
                 "attnid": tx.get("attnid"),
-                "vehnum": tx.get("vehnum"),
             })
-
-        # -------------------------------
-        # Tank Transaction
-        # -------------------------------
         elif "tank" in data:
             tx = data["tank"]
-
             base.update({
                 "type": "tank",
                 "tankid": tx.get("tankid"),
             })
-
         else:
-            return resp(400, "Invalid JSON → must include bowser / stan / tank")
-
-        # -------------------------------
-        # Transaction Fields
-        # -------------------------------
+            return resp(400, "Invalid JSON")
+ 
         base.update({
             "trnsid": tx.get("trnsid"),
             "trnvol": tx.get("trnvol"),
@@ -2621,43 +2610,28 @@ def update_service(request):
             "totamt": tx.get("totamt"),
             "pmpsts": tx.get("pmpsts"),
             "barnum": tx.get("barnum"),
-            "mobnum": tx.get("mobnum"),
         })
-
-        # Remove null values
+ 
+        # ✅ Filter None but keep todate/totime
         base = {k: v for k, v in base.items() if v is not None}
-
-        print("FINAL PAYLOAD:", base)
-
-        # -------------------------------
-        # Update if Exists
-        # -------------------------------
+        base["todate"] = data.get("todate")
+        base["totime"] = data.get("totime")
+ 
         existing = Transaction.objects.filter(trnsid=base.get("trnsid")).first()
-
         if existing:
             serializer = TransactionSerializer(existing, data=base, partial=True)
-
             if serializer.is_valid():
-                serializer.save()
-                return resp(200, "Transaction updated successfully")
-
-            print("VALIDATION ERRORS:", serializer.errors)
+                instance = serializer.save()
+                return resp(200, "Updated", TransactionSerializer(instance).data)
             return resp(400, "Validation failed", serializer.errors)
-
-        # -------------------------------
-        # Create New Transaction
-        # -------------------------------
+ 
         serializer = TransactionSerializer(data=base)
-
         if serializer.is_valid():
-            serializer.save()
-            return resp(201, "Transaction created successfully")
-
-        print("VALIDATION ERRORS:", serializer.errors)
+            instance = serializer.save()
+            return resp(201, "Created", TransactionSerializer(instance).data)
         return resp(400, "Validation failed", serializer.errors)
-
+ 
     except Exception as e:
-        print("SERVER ERROR:", str(e))
         return resp(500, "Server crashed", str(e))
 # @swagger_auto_schema(
 #     method="post",
@@ -2850,69 +2824,43 @@ def update_service(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAnyAuthenticated])
 def get_transactions(request):
-
     role = request.role
-    actor = request.actor   # Logged-in Admin/User object
-
-    # ===============================
-    # SUPER ADMIN → ALL TRANSACTIONS
-    # ===============================
+    actor = request.actor
+    dev_id = request.query_params.get("devID")
+ 
+    # =====================
+    # SUPER ADMIN → ALL
+    # =====================
     if role == "superadmin":
-
         txs = Transaction.objects.all()
-
-    # ============================================
-    # ADMIN → ONLY TRANSACTIONS FROM HIS STATIONS
-    # ============================================
+ 
+    # =====================
+    # ADMIN → assigned stations
+    # =====================
     elif role == "admin":
-
-        # Step 1: Find stations created by this admin
-        station_ids = Station.objects.filter(
-            created_by_admin=actor
+        station_ids = UserAssignment.objects.filter(
+            admin=actor
         ).values_list("station_id", flat=True)
-
-        # Step 2: Transactions are stored with devID (station_id)
-        txs = Transaction.objects.filter(
-            devID__in=station_ids
-        )
-
-    # ============================================
-    # USER → ONLY TRANSACTIONS FROM ASSIGNED STATIONS
-    # ============================================
+        txs = Transaction.objects.filter(stnID__in=station_ids)
+ 
+    # =====================
+    # USER → assigned stations
+    # =====================
     elif role == "user":
-
-        # Step 1: Find stations assigned to this user
-        assigned_station_ids = UserAssignment.objects.filter(
+        station_ids = UserAssignment.objects.filter(
             user=actor
         ).values_list("station_id", flat=True)
-
-        # Step 2: Filter transactions by those station IDs
-        txs = Transaction.objects.filter(
-            devID__in=assigned_station_ids
-        )
-
-    # ===============================
-    # INVALID ROLE
-    # ===============================
+        txs = Transaction.objects.filter(stnID__in=station_ids)
+ 
     else:
-        return resp(403, "Unauthorized role")
-
-    # ===============================
-    # OPTIONAL DATE FILTER
-    # ===============================
-    start_date = request.query_params.get('start_date')
-    end_date = request.query_params.get('end_date')
-
-    if start_date and end_date:
-        # Assumes todate is yyyy-mm-dd or similar standard format
-        txs = txs.filter(todate__range=[start_date, end_date])
-
-    # ===============================
-    # RESPONSE
-    # ===============================
+        return resp(403, "Unauthorized")
+ 
+    if dev_id:
+        txs = txs.filter(devID=dev_id)
+ 
     return resp(
         200,
-        "Transactions fetched successfully",
+        "Transactions fetched",
         TransactionSerializer(
             txs.order_by("-created_at"),
             many=True
@@ -2925,95 +2873,57 @@ def get_transactions(request):
 # ============================================================
 @swagger_auto_schema(
     method="get",
-    operation_summary="Station Transactions",
-    operation_description="""
-    Fetch all transactions for a given station_id.
-
-    ✅ Role Based Access:
-    - SuperAdmin → Can view all station transactions
-    - Admin → Can view only transactions of stations created by him
-    - User → Can view only transactions of stations assigned to him
-    """,
+    operation_description="Get transactions for a station (role-aware)",
     manual_parameters=[
-        openapi.Parameter(
-            name="station_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
-            description="Station ID (Device ID)",
-            required=True
-        )
-    ],
-    responses={
-        200: "Transactions fetched successfully",
-        403: "Access denied",
-        404: "Station not found"
-    }
+        openapi.Parameter('devID', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Filter by device ID"),
+    ]
 )
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAnyAuthenticated])
 def station_transactions(request, station_id):
-
     role = request.role
     actor = request.actor
-
-    # ===============================
+ 
     # 1) Check station exists
-    # ===============================
     station = Station.objects.filter(station_id=station_id).first()
-
     if not station:
         return resp(404, "Station not found")
-
-    # ===============================
-    # 2) Permission Logic (Role-Aware)
-    # ===============================
+ 
+    # 2) Permission logic
     if role == "superadmin":
-        # Superadmin can access everything
         pass
-
+ 
     elif role == "admin":
-        # Admin can access ONLY stations created by him
-        if station.created_by_admin != actor:
+        if station.portal_id != actor.portal_id:
             return resp(403, "Access denied")
-
+ 
     elif role == "user":
-        # User can access ONLY assigned stations
         allowed = UserAssignment.objects.filter(
             user=actor,
             station_id=station_id
         ).exists()
-
         if not allowed:
             return resp(403, "Access denied")
-
+ 
     else:
-        return resp(403, "Unauthorized role")
-
-    # ===============================
-    # 3) Fetch Transactions for Station
-    # ===============================
-    # ✅ Transaction.devID stores station_id directly
-    txs = Transaction.objects.filter(
-        devID=station_id
-    ).order_by("-created_at")
-
-    # ===============================
-    # OPTIONAL DATE FILTER
-    # ===============================
-    start_date = request.query_params.get('start_date')
-    end_date = request.query_params.get('end_date')
-
-    if start_date and end_date:
-        txs = txs.filter(todate__range=[start_date, end_date])
-
-    # ===============================
-    # 4) Response
-    # ===============================
+        return resp(403, "Unauthorized")
+ 
+    # 3) Fetch transactions by stnID
+    txs = Transaction.objects.filter(stnID=station_id)
+ 
+    # 4) Optional devID filter from UI
+    dev_id = request.query_params.get("devID")
+    if dev_id:
+        txs = txs.filter(devID=dev_id)
+ 
     return resp(
         200,
-        "Transactions fetched successfully",
-        TransactionSerializer(txs, many=True).data
+        "Transactions for station",
+        TransactionSerializer(
+            txs.order_by("-created_at"),
+            many=True
+        ).data
     )
 #===================================================================
 #ASSIGN STATION — FULL SWAGGER Old 

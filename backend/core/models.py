@@ -32,6 +32,7 @@ class Transaction(models.Model):
 
     # Device Info
     devID = models.CharField(max_length=50)
+    stnID = models.CharField(max_length=50, null=True, blank=True)
 
     # Date & Time
     todate = models.CharField(max_length=20, null=True, blank=True)

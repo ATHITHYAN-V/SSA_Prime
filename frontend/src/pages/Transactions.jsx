@@ -64,10 +64,11 @@ const Transactions = () => {
             result = result.filter(t =>
                 (t.trnsid || '').toLowerCase().includes(q) ||
                 (t.devID || '').toLowerCase().includes(q) ||
+                (t.stnID || t.station_id || '').toLowerCase().includes(q) ||
                 (t.trnamt || '').toString().includes(q)
             );
         }
-        if (selectedStation) result = result.filter(t => t.station_id === selectedStation || t.devID === selectedStation);
+        if (selectedStation) result = result.filter(t => (t.stnID || t.station_id) === selectedStation);
         if (selectedType) result = result.filter(t => t.type === selectedType);
         
         // Date Filtering
@@ -183,6 +184,7 @@ const Transactions = () => {
         <th>S.No</th>
         <th>Transaction ID</th>
         <th>Device ID</th>
+        <th>Station ID</th>
         <th>Disp ID</th>
         <th>Type</th>
         <th>Pump</th>
@@ -255,6 +257,11 @@ const Transactions = () => {
               {/* Device ID */}
               <td>
                 <code>{t.devID || "--"}</code>
+              </td>
+
+              {/* Station ID */}
+              <td>
+                  {t.stnID || t.station_id || stations.find(s => s.station_id === t.devID)?.station_id || "--"}
               </td>
 
               {/* Disp ID */}

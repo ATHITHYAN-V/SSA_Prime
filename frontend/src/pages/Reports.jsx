@@ -20,7 +20,7 @@ const Reports = () => {
     const [rowsPerPage, setRowsPerPage] = useState(25);
     const [showExport, setShowExport] = useState(false);
     const [exportCols, setExportCols] = useState({
-        trnsid: true, devID: true, bowserId: true, type: true, pumpId: true,
+        trnsid: true, devID: true, stationId: true, bowserId: true, type: true, pumpId: true,
         todate: true, totime: true, trnvol: true, trnamt: true,
         totalVol: true, totalAmt: true, attender: true, vehicle: true, 
         mobnum: true, barnum: true, status: true
@@ -61,7 +61,7 @@ const Reports = () => {
         
         // 1. Station Filter
         if (selectedStation) {
-            result = result.filter(t => t.devID === selectedStation || t.station_id === selectedStation);
+            result = result.filter(t => (t.stnID || t.station_id) === selectedStation);
         }
 
         // 2. Date Filter
@@ -239,6 +239,7 @@ const Reports = () => {
             const colConfig = {
                 trnsid:    { header: "Txn ID", width: 22 },
                 devID:     { header: "Dev ID", width: 17 },
+                stationId: { header: "Stn ID", width: 15, accessor: t => t.stnID || t.station_id || stations.find(s => s.station_id === t.devID)?.station_id || "--" },
                 bowserId:  { header: "Bwsr", width: 15, accessor: t => t.bwsrid || t.tankid || "--" },
                 type:      { header: "Type", width: 12 },
                 pumpId:    { header: "Pmp", width: 10, accessor: t => t.pumpid || t.pump || "P01" },
@@ -480,6 +481,7 @@ const Reports = () => {
                                         <th>#</th>
                                         <th>Txn ID</th>
                                         <th>Device ID</th>
+                                        <th>Station ID</th>
                                         <th>Disp ID</th>
                                         <th>Type</th>
                                         <th>Pump</th>
@@ -504,6 +506,7 @@ const Reports = () => {
                                                 <td>{(currentPage - 1) * rowsPerPage + i + 1}</td>
                                                 <td style={{ fontWeight: 600 }}>{t.trnsid || "--"}</td>
                                                 <td><code>{t.devID || "--"}</code></td>
+                                                <td>{t.stnID || t.station_id || stations.find(s => s.station_id === t.devID)?.station_id || "--"}</td>
                                                 <td>{t.bwsrid || t.tankid || "--"}</td>
                                                 <td><span className={`badge ${t.type === "bowser" ? "bg-success" : t.type === "stationary" ? "bg-info" : "bg-warning text-dark"}`}>{t.type}</span></td>
                                                 <td>{t.pumpid || "--"}</td>
@@ -566,8 +569,9 @@ const Reports = () => {
                                         <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>
                                             {key === 'trnsid' ? 'Transaction ID' :
                                                 key === 'devID' ? 'Dispenser ID' :
-                                                    key === 'bowserId' ? 'Bowser ID' :
-                                                        key === 'type' ? 'Type' :
+                                                    key === 'stationId' ? 'Station ID' :
+                                                        key === 'bowserId' ? 'Bowser ID' :
+                                                            key === 'type' ? 'Type' :
                                                             key === 'pumpId' ? 'Pump ID' :
                                                                 key === 'todate' ? 'Date' :
                                                                     key === 'totime' ? 'Time' :

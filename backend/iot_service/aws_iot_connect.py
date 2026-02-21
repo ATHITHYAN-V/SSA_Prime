@@ -1,256 +1,3 @@
-# # import json
-# # import requests
-# # from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-# # import os
-
-# # # === BASE DIRECTORY DETECTION ===
-# # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# # # AWS IoT Core Settings
-# # ENDPOINT = "a1ubcv6j7fanf3-ats.iot.ap-south-1.amazonaws.com"
-# # CLIENT_ID = "ssa_iot_listener"
-# # TOPIC = "SSA/DISPENSER/TRANSACT"
-
-# # # Certificate Paths
-# # PATH_TO_CERT = os.path.join(BASE_DIR, "certs", "certificate.pem.crt")
-# # PATH_TO_KEY = os.path.join(BASE_DIR, "certs", "private.pem.key")
-# # PATH_TO_ROOT = os.path.join(BASE_DIR, "certs", "AmazonRootCA1.pem")
-
-# # # Django API Endpoint
-# # DJANGO_API_URL = "http://ssaprime.com:8000/update_service/"
-
-# # # REQUIRED HEADER FOR DJANGO BACKEND
-# # HEADERS = {"TZ_KEY": "ssa123"}   # <-- GLOBAL KEY
-
-
-# # def send_to_django(payload):
-# #     """Send IoT payload to Django backend"""
-# #     try:
-# #         res = requests.post(
-# #             DJANGO_API_URL,
-# #             json=payload,
-# #             headers=HEADERS
-# #         )
-# #         print(f"➡️ Sent to Django | Status: {res.status_code}")
-
-# #         if res.status_code != 200 and res.status_code != 201:
-# #             print("❌ Django Response Error:", res.text)
-
-# #     except Exception as e:
-# #         print("❌ Error sending data to Django:", e)
-
-
-# # def message_callback(client, userdata, message):
-# #     """Triggered when AWS IoT Core sends a message"""
-# #     try:
-# #         payload = json.loads(message.payload.decode())
-# #         print("📩 AWS IoT Received:", payload)
-
-# #         # Forward to API
-# #         send_to_django(payload)
-
-# #     except Exception as e:
-# #         print("❌ Error in message_callback:", e)
-
-
-# # def start_iot_listener():
-# #     """Starts AWS IoT MQTT listener"""
-# #     try:
-# #         print("🔌 Connecting to AWS IoT Core...")
-
-# #         client = AWSIoTMQTTClient(CLIENT_ID)
-# #         client.configureEndpoint(ENDPOINT, 8883)
-# #         client.configureCredentials(PATH_TO_ROOT, PATH_TO_KEY, PATH_TO_CERT)
-
-# #         client.connect()
-# #         print("✅ Connected to AWS IoT Core!")
-
-# #         client.subscribe(TOPIC, 1, message_callback)
-# #         print(f"👂 Listening on Topic: {TOPIC}")
-
-# #         # Infinite loop
-# #         while True:
-# #             pass
-
-# #     except Exception as e:
-# #         print("❌ AWS IoT Connection Failed:", e)
-
-
-
-
-# #=======================================================================new============================================================================
-# #=======================================05 dec update code ========================================================================================
-# import json
-# import time
-# import requests
-# import os
-# import threading
-# from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
- 
-# # ============================================================
-# # BASE DIRECTORY
-# # ============================================================
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
- 
-# # ============================================================
-# # AWS IOT SETTINGS
-# # ============================================================
-# ENDPOINT = "a1ubcv6j7fanf3-ats.iot.ap-south-1.amazonaws.com"
-# LISTENER_CLIENT_ID = f"ssa_iot_listener_{int(time.time())}"
-# SUB_TOPIC = "SSA/DISPENSER/TRANSACT"
-
-# # ============================================================
-# # CERTIFICATES
-# # ============================================================
-# PATH_TO_CERT = os.path.join(BASE_DIR, "certs", "certificate.pem.crt")
-# PATH_TO_KEY = os.path.join(BASE_DIR, "certs", "private.pem.key")
-# PATH_TO_ROOT = os.path.join(BASE_DIR, "certs", "AmazonRootCA1.pem")
- 
-# # ============================================================
-# # DJANGO API SETTINGS
-# # ============================================================
-# DJANGO_API_URL = "http://127.0.0.1:8000/iot/update/"
-# HEADERS = {"TZ_KEY": "ssa123"}
- 
-# # ============================================================
-# # GLOBAL LISTENER CLIENT
-# # ============================================================
-# mqtt_client = None
- 
- 
-# # ============================================================
-# # CREATE A TEMP CLIENT FOR PUBLISHING (ALWAYS CONNECTED)
-# # ============================================================
-# def get_publish_client():
-#     client = AWSIoTMQTTClient(f"pub_{int(time.time()*1000)}")
-#     client.configureEndpoint(ENDPOINT, 8883)
-#     client.configureCredentials(PATH_TO_ROOT, PATH_TO_KEY, PATH_TO_CERT)
-#     client.connect()
-#     return client
- 
- 
-# # ============================================================
-# # PUBLISH CONFIG MESSAGE (SERVER → DEVICE)
-# # ============================================================
-# def publish_config_message(dev_id, adm_flag, usr_flag, dev_type):
-#     try:
-#         client = get_publish_client()
- 
-#         topic = f"SSA/{dev_id}/CONFIG"
-#         payload = {
-#             "devID": dev_id,
-#             "Admflg": adm_flag,
-#             "usrflg": usr_flag,
-#             "devtyp": dev_type
-#         }
- 
-#         print(f"\n📤 PUBLISH CONFIG → {topic}")
-#         print(payload)
-#         client.publish(topic, json.dumps(payload), 1)
- 
-#         print("✅ CONFIG Published")
-#     except Exception as e:
-#         print("❌ CONFIG publish failed:", e)
- 
- 
-# # ============================================================
-# # SEND RESPONSE BACK TO DEVICE
-# # ============================================================
-# def send_device_response(dev_id, status_code):
-#     try:
-#         client = get_publish_client()
- 
-#         topic = f"SSA/{dev_id}/RESPONSE"
-#         payload = {
-#             "devID": dev_id,
-#             "trnrsp": {"status": status_code}
-#         }
-#         print(payload)
-#         print(f"📤 PUBLISH RESPONSE → {topic}")
-#         client.publish(topic, json.dumps(payload), 1)
- 
-#         print("✅ RESPONSE Published")
-#     except Exception as e:
-#         print("❌ Response publish failed:", e)
- 
- 
-# # ============================================================
-# # SEND TO DJANGO IN A SEPARATE THREAD
-# # ============================================================
-# def process_message(payload):
-#     try:
-#         print("➡️ Sending to Django:", payload)
-#         res = requests.post(DJANGO_API_URL, json=payload, headers=HEADERS)
- 
-#         dev_id = payload.get("devID")
-#         status = res.status_code
- 
-#         if status in (200, 201):
-#             send_device_response(dev_id, 100)
-#         else:
-#             send_device_response(dev_id, 99)
-#             print("❌ Django error:", res.text)
- 
-#     except Exception as e:
-#         print("❌ Django request failed:", e)
- 
- 
-# # ============================================================
-# # MQTT CALLBACK
-# # ============================================================
-# def message_callback(client, userdata, message):
-#     try:
-#         payload = json.loads(message.payload.decode())
-#         print("\n📩 RECEIVED:", payload)
- 
-#         threading.Thread(target=process_message, args=(payload,)).start()
- 
-#     except Exception as e:
-#         print("❌ MQTT callback error:", e)
- 
- 
-# # ============================================================
-# # START AWS IOT LISTENER (LONG-LIVED CLIENT)
-# # ============================================================
-# def start_iot_listener():
-#     global mqtt_client
- 
-#     print("🚀 Starting AWS IoT Listener...")
- 
-#     try:
-#         mqtt_client = AWSIoTMQTTClient(LISTENER_CLIENT_ID)
-#         mqtt_client.configureEndpoint(ENDPOINT, 8883)
-#         mqtt_client.configureCredentials(PATH_TO_ROOT, PATH_TO_KEY, PATH_TO_CERT)
- 
-#         mqtt_client.configureAutoReconnectBackoffTime(1, 32, 20)
-#         mqtt_client.configureOfflinePublishQueueing(-1)
-#         mqtt_client.configureDrainingFrequency(2)
-#         mqtt_client.configureConnectDisconnectTimeout(10)
-#         mqtt_client.configureMQTTOperationTimeout(10)
- 
-#         print("🔌 Connecting to AWS IoT...")
-#         mqtt_client.connect()
-#         print("✅ CONNECTED to AWS IoT Core")
- 
-#         mqtt_client.subscribe(SUB_TOPIC, 1, message_callback)
-#         print(f"👂 Subscribed to: {SUB_TOPIC}")
- 
-#         while True:
-#             time.sleep(1)
- 
-#     except Exception as e:
-#         print("❌ Listener failed:", e)
- 
- 
-# # ============================================================
-# # MAIN
-# # ============================================================
-# if __name__ == "__main__":
-#     start_iot_listener()
-
-
-# 18-02-2026 updated code =====================================================================================
-# ======================================================================================================================
 import re
 import json
 import time
@@ -258,7 +5,7 @@ import requests
 import os
 import threading
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-from core.models import AssetBarcode
+from core.models import AssetBarcode,Bowser, Stationary, Tank
 from django.utils import timezone
  
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -291,6 +38,59 @@ def safe_publish(topic, payload):
     except Exception as e:
         print("❌ Publish failed:", e)
  
+ 
+# ============================================================
+# DEVICE INFO CALLBACK
+# ============================================================
+def device_info_callback(client, userdata, message):
+ 
+    try:
+        payload = json.loads(message.payload.decode())
+        print("\n📩 DEVICE INFO REQUEST:", payload)
+ 
+        dev_id = payload.get("devID")
+ 
+        if not dev_id:
+            print("❌ devID missing")
+            return
+ 
+        station_id = ""
+        bowser_id = ""
+ 
+        # 1️⃣ Check Bowser
+        bowser = Bowser.objects.filter(mqtt_id=dev_id).first()
+        if bowser and bowser.status == "active":
+            station_id = bowser.station.station_id
+            bowser_id = bowser.bowser_id
+ 
+        else:
+            # 2️⃣ Check Stationary
+            stationary = Stationary.objects.filter(mqtt_id=dev_id).first()
+            if stationary and stationary.status == "active":
+                station_id = stationary.station.station_id
+                bowser_id = stationary.stationary_id
+ 
+            else:
+                # 3️⃣ Check Tank
+                tank = Tank.objects.filter(mqtt_id=dev_id).first()
+                if tank and tank.status == "active":
+                    station_id = tank.station.station_id
+                    bowser_id = tank.tank_id
+ 
+        response = {
+            # "devID": dev_id,
+            "stationid": station_id,
+            "bowser": bowser_id
+        }
+ 
+        topic = f"SSA/{dev_id}/INFORES"
+ 
+        safe_publish(topic, response)
+ 
+        print("📤 INFO RESPONSE SENT:", response)
+ 
+    except Exception as e:
+        print("❌ Device info error:", e)
  
 # ============================================================
 # PUBLISH CONFIG MESSAGE (SERVER → DEVICE)
@@ -449,11 +249,11 @@ def extract_model(barcode):
     # NX30-00145 → NX30
     if "-" in barcode:
         return barcode.split("-")[0]
-
+   
     if "_" in barcode:
         return barcode.split("_")[0]
  
-    # SPO25551 → SPO2
+    # SPO25551 → SPO
     match = re.match(r"([A-Z]+)", barcode)
     if match:
         return match.group(1)
@@ -491,28 +291,15 @@ def asset_request_callback(client, userdata, message):
         valid = 99
         volume = 0
  
-        # -------------------------------
-        # Validation Check
-        # -------------------------------
         if asset:
-
-            # Check Status
+ 
             status_ok = str(asset.status).lower() == "active"
-
-            # Expiry Date Handling (Timezone Fix)
-            expiry_date = asset.valitity
-
-            # Convert Naive → Aware Datetime
-            if expiry_date and timezone.is_naive(expiry_date):
-                expiry_date = timezone.make_aware(expiry_date)
-
-            # Compare Safely
-            validity_ok = expiry_date and expiry_date >= timezone.now()
-
-            print("Status OK:", status_ok)
-            print("Validity OK:", validity_ok)
-
-            # Final Approval
+ 
+            if asset.valitity.tzinfo is None:
+                asset.valitity = timezone.make_aware(asset.valitity)
+ 
+            validity_ok = asset.valitity >= timezone.now()
+ 
             if status_ok and validity_ok:
                 valid = 100
                 volume = float(asset.volume)
@@ -532,7 +319,7 @@ def asset_request_callback(client, userdata, message):
  
         safe_publish(topic, response)
  
-        print("📤 Sent_response:", response)
+        print("📤 Sent:", response)
  
     except Exception as e:
         print("❌ IoT error:", e)
@@ -571,15 +358,24 @@ def start_iot_listener():
     print("🔌 Connecting to AWS IoT...")
     mqtt_client.connect()
     print("✅ CONNECTED to AWS IoT Core")
+    print("===============================")
  
     mqtt_client.subscribe(SUB_TOPIC, 1, message_callback)
     print(f"👂 Subscribed to: {SUB_TOPIC}")
+    print("===============================")
+ 
  
     mqtt_client.subscribe("SSA/REQUEST/ASSET", 1, asset_request_callback)
     print("👂 Subscribed to: SSA/REQUEST/ASSET")
+    print("===============================")
+ 
+    mqtt_client.subscribe("SSA/DEVICEINFO/INFOREQ", 1, device_info_callback)
+    print("👂 Subscribed to: SSA/DEVICEINFO/INFOREQ")
+    print("=========================================")
     while True:
         time.sleep(1)
  
  
 if __name__ == "__main__":
     start_iot_listener()
+ 
