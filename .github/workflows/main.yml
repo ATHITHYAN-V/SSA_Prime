@@ -31,16 +31,15 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    # 4. Streamlined build and push using dynamic variables
     - name: Build, tag, and push image to Amazon ECR
+      working-directory: ./backend  # <-- Moved out of 'env', aligned with 'name' and 'run'
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         REPOSITORY: ${{ env.ECR_REPOSITORY }}
         IMAGE_TAG: latest
-        working-directory: ./backend
       run: |
         # Build the docker image and tag it directly with the ECR URL
-        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+        docker build -t 225989351123.dkr.ecr.ap-south-1.amazonaws.com/demo/ssa:latest .
         
         # Push the image to AWS ECR
-        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        docker push 225989351123.dkr.ecr.ap-south-1.amazonaws.com/demo/ssa:latest
