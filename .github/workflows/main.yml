@@ -40,6 +40,9 @@ jobs:
       run: |
         # Build the docker image and tag it directly with the ECR URL
         docker build -t 225989351123.dkr.ecr.ap-south-1.amazonaws.com/demo/ssa:latest .
+
+
+
         
         # Push the image to AWS ECR
         docker push 225989351123.dkr.ecr.ap-south-1.amazonaws.com/demo/ssa:latest
