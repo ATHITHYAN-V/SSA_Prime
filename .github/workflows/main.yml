@@ -37,6 +37,7 @@ jobs:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         REPOSITORY: ${{ env.ECR_REPOSITORY }}
         IMAGE_TAG: latest
+        working-directory: ./backend
       run: |
         # Build the docker image and tag it directly with the ECR URL
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
